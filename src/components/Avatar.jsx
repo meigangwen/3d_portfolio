@@ -9,7 +9,7 @@ import { useAnimations, useFBX, useGLTF } from '@react-three/drei'
 
 export function Avatar(props) {
   const group = useRef();  
-  const { nodes, materials } = useGLTF('models/player.glb')
+  const { nodes, materials } = useGLTF('models/player2.glb')
 
   const { animations: typingAnimation } = useFBX("animations/Typing.fbx");
   
@@ -17,9 +17,11 @@ export function Avatar(props) {
   
   const { actions } = useAnimations(typingAnimation, group);
 
+  /*
   useFrame((state) => {
     group.current.getObjectByName("Neck").lookAt(state.camera.position);
   });
+  */
 
   useEffect(() => {
     actions["Typing"].reset().play();
@@ -45,4 +47,4 @@ export function Avatar(props) {
   )
 }
 
-useGLTF.preload('models/player.glb')
+useGLTF.preload('models/player2.glb')
