@@ -4,6 +4,7 @@ Command: npx gltfjsx@6.2.10 public/models/player.glb
 */
 
 import React, { useRef, useEffect } from 'react'
+import { useFrame } from "@react-three/fiber";
 import { useAnimations, useFBX, useGLTF } from '@react-three/drei'
 
 export function Avatar(props) {
@@ -15,6 +16,10 @@ export function Avatar(props) {
   typingAnimation[0].name = "Typing";
   
   const { actions } = useAnimations(typingAnimation, group);
+
+  useFrame((state) => {
+    group.current.getObjectByName("Neck").lookAt(state.camera.position);
+  });
 
   useEffect(() => {
     actions["Typing"].reset().play();
