@@ -5,28 +5,56 @@ Command: npx gltfjsx@6.2.10 public/models/player.glb
 
 import React, { useRef, useEffect } from 'react'
 import { useFrame } from "@react-three/fiber";
+import { useControls } from "leva";
 import { useAnimations, useFBX, useGLTF } from '@react-three/drei'
+import * as THREE from 'three';
 
 export function Avatar(props) {
-  const group = useRef();  
-  const { nodes, materials } = useGLTF('models/player2.glb')
-
-  const { animations: typingAnimation } = useFBX("animations/Typing.fbx");
-  
-  typingAnimation[0].name = "Typing";
-  
-  const { actions } = useAnimations(typingAnimation, group);
-
-  /*
-  useFrame((state) => {
-    group.current.getObjectByName("Neck").lookAt(state.camera.position);
+  const {animation} = props;
+  const { headFollow, cursorFollow, wireframe } = useControls ({
+    headFollow: false,
+    cursorFollow: false,
+    wireframe: false,
   });
-  */
+
+  const group = useRef();  
+  const { nodes, materials } = useGLTF('models/player2.glb');
+  
+  const { animations: typingAnimation } = useFBX("animations/Typing.fbx");
+  const { animations: standingAnimation } = useFBX("animations/Standing Idle.fbx");
+  const { animations: fallingAnimation } = useFBX("animations/Falling Idle.fbx");
+  
+  //rename the anims because they are called differently
+  typingAnimation[0].name = "Typing";
+  standingAnimation[0].name = "Standing";
+  fallingAnimation[0].name = "Falling";
+
+  const animList = [typingAnimation[0], standingAnimation[0], fallingAnimation[0]];
+  const { actions } = useAnimations(animList, group);
+  
+  useFrame((state) => {
+    if (headFollow) {
+      group.current.getObjectByName("Head").lookAt(state.camera.position);
+    }
+    if (cursorFollow) {
+      const target = new THREE.Vector3(state.mouse.x, state.mouse.y, 1);
+      group.current.getObjectByName("Spine2").lookAt(target);
+    }
+  });
+  
 
   useEffect(() => {
-    actions["Typing"].reset().play();
-  },[]);  
+    actions[animation].reset().fadeIn(0.5).play();
+    return () => {
+      actions[animation].reset().fadeOut(0.5);  
+    };
+  },[animation]);  
 
+  useEffect(() => {
+    Object.values(materials).forEach((material) => {
+      material.wireframe = wireframe;
+    });
+  },[wireframe]);
 
   return (
     <group {...props} ref={group} dispose={null}>
